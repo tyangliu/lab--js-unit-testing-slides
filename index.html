@@ -132,7 +132,8 @@ let userIds = [
 ];
 
 for (let i=0; i < usersIds.length; i++) {
-  let id = userIds[i];
+  let id = userIds[i]
+    , request = new XMLHttpRequest();
 
   // make a synchronous HTTP GET call
   request.open('GET', `/users/${id}`, false /* switches off async */);
