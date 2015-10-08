@@ -168,7 +168,8 @@ for (let i=0; i < usersIds.length; i++) {
   ];
 
   for (let i=0; i < usersIds.length; i++) {
-    let id = userIds[i];
+    let id = userIds[i]
+      , request = new XMLHttpRequest();
 
     // make a synchronous HTTP GET call
     request.open('GET', `/users/${id}`, false /* switches off async */);
@@ -185,7 +186,8 @@ for (let i=0; i < usersIds.length; i++) {
                 <li class="event-block fragment">Photo refreshes</li>
                 <li class="event-block omg fragment">
   for (let i=0; i < usersIds.length; i++) { <br/>
-    let id = userIds[i];&#10;
+    let id = userIds[i] <br />
+      , request = new XMLHttpRequest(); <br />
 
     request.open('GET', `/users/${id}`, false /* switches off async */);<br/>
     (request.status == 200) && console.log(request.responseText);<br/>
@@ -211,6 +213,7 @@ let userIds = [
 ];
 
 userIds.forEach(id => {
+  let request = new XMLHttpRequest();
   // make an async HTTP GET call
   request.open('GET', `/users/${id}`, true);
 
@@ -249,6 +252,7 @@ let userIds = [
 ];
 
 userIds.forEach(id => {
+  let request = new XMLHttpRequest();
   request.open('GET', `/users/${id}`, true);
 
   request.onload(() =>
