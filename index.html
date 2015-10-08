@@ -549,6 +549,93 @@ describe(`the findUserWithPromises function`, () => {
           </div>
         </section>
 
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">Loading Angular Components into Tests</h1>
+          <div class="slide-content">
+            <pre><code data-trim>
+
+// myFilters.js
+angular.module('myFilters', [])
+  .filter('formatDate', () => (collection, property) => {
+    /* cool things here */
+  });
+
+// myFilters.spec.js
+describe('Custom filters module', () => {
+
+  // make all components of 'myFilters' available during tests
+  beforeEach(() => module('myFilters'));
+  // $filter, $controller, $directive allow you to load the
+  // respective components by their angular names
+  it('should have a formatDate function', inject($filter =>
+    expect($filter('formatDate')).to.not.be.null
+  ));
+  // the above translates to the following ES5
+  it('should have a dateFilter function', inject(function($filter) {
+    expect($filter('formatDate')).to.not.be.null;
+  }));
+
+});
+            </code></pre>
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide padded">
+          <h1 class="slide-title">Directly Injecting a Filter</h1>
+          <div class="slide-content">
+          <pre><code data-trim>
+// myFilters.spec.js
+describe('Custom filters module', () => {
+
+  // make all components of 'myFilters' available during tests
+  beforeEach(() => module('myFilters'));
+
+  /* truncated */
+
+  describe('Filter: formatDate', () => {
+    /* injecting filterName + 'Filter' will resolve the filterName filter,
+    a little shortcut to $filter('filterName')
+
+    NOTE: this is specific to filters; with services for example,
+    just the service's name itself suffices */
+    it('should format dates to be MMMM d, yyyy', inject(formatDateFilter =>
+      expect(formatDateFilter('09/05/2015')).to.be('September 5, 2015');
+    );
+  });
+
+});
+          </code></pre>
+          </div>
+        </section>
+
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">Sharing Dependencies Between Tests</h1>
+          <div class="slide-content">
+          <p>Instead of injecting a dependency once for every tests, we can just assign it to a variable</p>
+          <pre><code data-trim>
+// myFilters.spec.js
+describe('Custom filters module', () => {
+
+  let FormsService;
+  // make the forms module available
+  beforeEach(() => module('forms'));
+  // inject and save the FormsService; angular lets us lead & trail the dep name
+  // with _s, so it doesn't shadow our var of the same name from above
+  beforeEach(inject(_FormsService_ => {
+    FormsService = _FormsService_;
+  });
+
+  // now every test has access to the service without re-injecting
+  it('allows me to retrieve the most recent forms', () => {
+    let forms = FormsService.getForms();
+    expect(forms).to.have.length.within(3,10);
+  });
+
+});
+          </code></pre>
+          </div>
+        </section>
+
       </div>
 
     </div>
