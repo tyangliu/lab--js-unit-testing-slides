@@ -614,7 +614,7 @@ describe('Custom filters module', () => {
           <p>Instead of injecting a dependency once for every tests, we can just assign it to a variable</p>
           <pre><code data-trim>
 // myFilters.spec.js
-describe('Custom filters module', () => {
+describe('The Forms Service', () => {
 
   let FormsService;
   // make the forms module available
@@ -629,6 +629,37 @@ describe('Custom filters module', () => {
   it('allows me to retrieve the most recent forms', () => {
     let forms = FormsService.getForms();
     expect(forms).to.have.length.within(3,10);
+  });
+
+});
+          </code></pre>
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide padded">
+          <h1 class="slide-title">Mocking Services</h1>
+          <div class="slide-content">
+            <p>Services may rely on unpredictable network I/O, so here comes the mocks.</p>
+          <pre><code data-trim>
+// just an example, having other service objects wholly passed into
+// a generic ModalsService wouldn't be the best design in practice
+describe('The ModalsService', () => {
+  let ModalsService
+    , FormsService;
+
+  beforeEach(() => module('modals'));
+  beforeEach(inject(_ModalsService_ => ModalsService = _ModalsService_));
+  // create a fake object containing the mocked FormsService with the fn we need
+  beforeEach(() => FormsService = {
+    getData: () => ([
+      { name: 'A form name', date: '2015-06-05' },
+      { name: 'Another form name', date: '2016-07-03' }
+    ])
+  });
+
+  it('creates a new modal from a service with the expected props', () => {
+    let modal = ModalsService.createFromService(FormsService);
+    expect(modal).to.have.all.keys('name', 'date', 'width', 'height');
   });
 
 });
