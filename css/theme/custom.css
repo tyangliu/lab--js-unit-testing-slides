@@ -3,7 +3,7 @@ body {
 
 .reveal {
     font-family: 'Source Sans Pro', sans-serif;
-    font-size: 30px;
+    font-size: 28px;
     line-height: 1.5em;
     color: #1b1b1b;
 }
@@ -28,17 +28,17 @@ body {
 }
 
 .reveal h1 {
-    font-size: 60px;
+    font-size: 48px;
 }
 
 .reveal h2 {
-    font-size: 48px;
+    font-size: 36px;
     line-height: 1.5em;
 }
 
 .reveal p {
-    margin-bottom: 1em;
-    margin-top: 1em;
+    margin-bottom: .7em;
+    margin-top: .7em;
 }
 
 .full-screen-slide {
@@ -48,8 +48,8 @@ body {
 }
 
 .reveal .slides .full-screen-slide.padded {
-    padding-top: 5%;
-    padding-bottom: 5%;
+    padding-top: 2%;
+    padding-bottom: 2%;
 }
 
 /* Intro */
@@ -107,7 +107,7 @@ body {
 }
 
 .reveal .slide-content {
-    padding: 50px 15% 40px 15%;
+    padding: 30px 15% 30px 15%;
 }
 
 .def-keys, .def-values {
@@ -132,19 +132,19 @@ body {
     text-align: left;
     padding: 48px;
     font-family: 'Source Code Pro', monospace;
-    font-size: 22px;
+    font-size: 16px;
     line-height: 1.5em;
     border-radius: 5px;
 }
 
 .reveal code.code-small {
     padding: 20px;
-    font-size: 14px;
+    font-size: 10px;
 }
 
 .reveal code.code-medium {
     padding: 24px;
-    font-size: 17px;
+    font-size: 12px;
 }
 
 .reveal .event-block-seq {
