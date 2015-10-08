@@ -1,0 +1,23 @@
+Code intro
+- what x provides
+
+Primer on callbacks/promises
+- blocking code vs. nonblocking what it looks like
+- it will freeze the UI
+
+Testing callbacks
+- sinon spies
+
+Testing promises
+- chai-as-promised
+
+Mocking XHR
+- sinon fake xhr / server
+
+Testing Angular
+- no difference other than angular's own way of 'loading' modules
+
+Karma
+- loads and runs your tests in a browser, providing instant feedback
+- tests automatically run everytime you make a code change
+  (it's okay because it's so fast)

@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Unit Testing in JavaScript</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Slab|Source+Code+Pro:600|Source+Sans+Pro:400,700,700italic,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/monokai-sublime.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+
+        <section data-background="#ffde00" class="full-screen-slide intro">
+          <h1 class="intro-title"></h1>
+          <div class="intro-footer">
+            <div class="intro-footer-logo"></div>
+            <p class="intro-footer-text">
+              <span class="intro-footer-name">Thomas Liu</span>
+              October 8, 2015
+            </p>
+          </div>
+        </section>
+
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">Tools We'll Be Using</h1>
+          <div class="slide-content">
+            <ul class="def-keys">
+              <li>mocha</li>
+              <li>chai</li>
+              <li>sinon</li>
+              <li>karma</li>
+            </ul>
+            <ul class="def-values">
+              <li>describe(), it()</li>
+              <li>expect(), assert(), .should()</li>
+              <li>spies and mocks</li>
+              <li>automatically running our tests in browser(s)</li>
+            </ul>
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide padded">
+          <h1 class="slide-title">What a Spec Looks Like</h1>
+          <div class="slide-content">
+            <pre><code data-trim>
+describe('the formatISODate function', () => {
+
+  it('should convert a mm/dd/yyyy date to ISO8601 format', () => {
+    let date = '09/30/2015';
+
+    // more traditional asserts
+    assert.isEqual(formatISODate(date), '2015-09-30T07:00:00.000Z');
+    // .should, modifies Object.prototype!
+    formatISODate(date).should.equal('2015-09-30T07:00:00.000Z');
+    // nicer than asserts, but without modifying Object.prototype
+    // like .should does
+    expect(formatISODate(date)).to.be('2015-09-30T07:00:00.000Z');
+  });
+
+});
+            </code></pre>
+          </div>
+        </section>
+
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">Setup and Teardown</h1>
+          <div class="slide-content">
+            <pre><code data-trim>
+describe('yumm mocha', () => {
+
+  let somethingCool;
+
+  // runs once at the start of this describe block, does not re-run per nested describe
+  before(() => { somethingCool = new DbClient(); })
+  // runs before each test (each "it"), including tests in nested describes
+  beforeEach(() => { somethingCool.reset(); }); // (1)
+  afterEach(() => { console.log('a test has finished!'); }
+  after(() => { /* do some final cleanup */ });
+
+  it('should do something cool', () => {});
+
+  describe('a submodule', () => {
+    beforeEach(() => {}); // (2)
+    it('should do something cooler', () => {}); // both of the (1) and (2) hooks are run
+  });
+
+});
+            </code></pre>
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide">
+          <section class="full-screen-slide padded">
+            <h1 class="slide-title">Primer on Async (before we do async testing)</h1>
+            <div class="slide-content">
+              <pre><code data-trim>
+let userIds = [
+  'qjwKKjEYbEqgtwD3BYHhww',
+  'tDPbT6FSn0WyyV_29bI_Zw',
+  '97TDtHncF0y2Z5oQAi48zQ',
+  'WA4d7b-kaEy-XNIpw34opQ'
+];
+
+for (let i=0; i < usersIds.length; i++) {
+  let id = userIds[i];
+
+  // make a synchronous HTTP GET call
+  request.open('GET', `/users/${id}`, false /* switches off async */);
+
+  // at this point, the entire thread is just sitting around for
+  // the network IO to finish instead of doing other work!
+
+  (request.status == 200) && console.log(request.responseText);
+});
+              </code></pre>
+            </div>
+          </section>
+          <section class="full-screen-slide padded">
+            <h1 class="slide-title">Imagine we had a photo slideshow</h1>
+            <div class="slide-content">
+              <div class="slide-left-wrapper" style="width: 50%;">
+              <div style="
+                width: 80%;
+                padding: 30px 10%;
+                background: linear-gradient(to bottom, #3d66f7 0%,#ab7aff 100%);
+                border-radius: 5px;
+                margin-bottom: 20px;
+                color: #fff;
+              ">
+                Pretend this refreshes every 2 seconds
+              </div>
+              <pre><code data-trim class="code-small">
+  let userIds = [
+    'qjwKKjEYbEqgtwD3BYHhww',
+    'tDPbT6FSn0WyyV_29bI_Zw',
+    '97TDtHncF0y2Z5oQAi48zQ',
+    'WA4d7b-kaEy-XNIpw34opQ'
+  ];
+
+  for (let i=0; i < usersIds.length; i++) {
+    let id = userIds[i];
+
+    // make a synchronous HTTP GET call
+    request.open('GET', `/users/${id}`, false /* switches off async */);
+
+    // at this point, the entire thread is just sitting around for
+    // the network IO to finish instead of doing other work!
+
+    (request.status == 200) && console.log(request.responseText);
+  });
+              </code></pre>
+              </div>
+              <ul class="event-block-seq" style="width: 35%">
+                <li class="event-block fragment">Photo refreshes</li>
+                <li class="event-block fragment">Photo refreshes</li>
+                <li class="event-block omg fragment">
+  for (let i=0; i < usersIds.length; i++) { <br/>
+    let id = userIds[i];&#10;
+
+    request.open('GET', `/users/${id}`, false /* switches off async */);<br/>
+    (request.status == 200) && console.log(request.responseText);<br/>
+  });
+                </li>
+                <li class="event-block fragment">Photo refreshes</li>
+              </ul>
+              <p class="fragment" style="clear: both; padding: 40px 0">
+                The loop completely freezes the webpage (not just the slideshow) until it
+                finishes all 4 requests!
+              </p>
+            </div>
+          </section>
+          <section class="full-screen-slide padded">
+            <h1 class="slide-title">An Async Version</h1>
+            <div class="slide-content">
+              <pre><code data-trim>
+let userIds = [
+  'qjwKKjEYbEqgtwD3BYHhww',
+  'tDPbT6FSn0WyyV_29bI_Zw',
+  '97TDtHncF0y2Z5oQAi48zQ',
+  'WA4d7b-kaEy-XNIpw34opQ'
+];
+
+userIds.forEach(id => {
+  // make an async HTTP GET call
+  request.open('GET', `/users/${id}`, true);
+
+  // let the thread deal with something else for now, such as handle the user
+  // scrolling down the webpage (kind of important right?) and refreshing our slideshow
+
+  request.onload(() =>
+    // an event fired signalling that the server responded,
+    // only now do we come back to deal with it
+    (request.status == 200) && console.log(request.responseText)
+  );
+});
+              </code></pre>
+            </div>
+          </section>
+          <section class="full-screen-slide padded">
+            <h1 class="slide-title">What happens this time?</h1>
+            <div class="slide-content">
+              <div class="slide-left-wrapper" style="width: 50%;">
+                <div style="
+                  width: 80%;
+                  padding: 30px 10%;
+                  background: linear-gradient(to bottom, #3d66f7 0%,#ab7aff 100%);
+                  border-radius: 5px;
+                  margin-bottom: 20px;
+                  color: #fff;
+                ">
+                  Pretend this refreshes every 2 seconds
+                </div>
+              <pre><code data-trim class="code-small">
+let userIds = [
+  'qjwKKjEYbEqgtwD3BYHhww',
+  'tDPbT6FSn0WyyV_29bI_Zw',
+  '97TDtHncF0y2Z5oQAi48zQ',
+  'WA4d7b-kaEy-XNIpw34opQ'
+];
+
+userIds.forEach(id => {
+  request.open('GET', `/users/${id}`, true);
+
+  request.onload(() =>
+    (request.status == 200) && console.log(request.responseText)
+  );
+});
+              </code></pre>
+              </div>
+              <ul class="event-block-seq" style="width: 35%">
+                <li class="event-block fragment">Photo refreshes</li>
+                <li class="event-block fragment" style="background: #269df3">Send request 1</li>
+                <li class="event-block fragment" style="background: #269df3">Send request 2</li>
+                <li class="event-block fragment">Photo refreshes</li>
+                <li class="event-block fragment" style="background: #269df3">Send request 3</li>
+                <li class="event-block fragment" style="background: #269df3">Send request 4</li>
+                <li class="event-block fragment">Photo refreshes</li>
+                <li class="event-block fragment" style="background: #5579f3">console.log response 3</li>
+                <li class="event-block fragment">Photo refreshes</li>
+                <li class="event-block fragment" style="background: #5579f3">console.log response 2</li>
+                <li class="event-block fragment" style="background: #5579f3">console.log response 1</li>
+                <li class="event-block fragment" style="background: #5579f3">console.log response 4</li>
+              </ul>
+            </div>
+          </section>
+        </section>
+
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">Callbacks</h1>
+          <div class="slide-content">
+            <div class="slide-left-wrapper">
+            <pre><code data-trim class="code-medium">
+// define the function
+function findUserAsync(id, callback) {
+  console.log(`I’m Mr. Meeseeks 1`);
+  // assume this is a db IO op and takes significantly longer than code execution
+  User.find({id}).exec(user => {
+    console.log(`I’m Mr. Meeseeks 2`);
+    callback(user);
+  });
+
+  console.log(`I’m Mr. Meeseeks 3`);
+}
+
+// actual things start happening here
+console.log(`I’m Mr. Meeseeks 4`);
+
+findUserAsync(23932, user => {
+  console.log(`I’m Mr. Meeseeks 5`);
+});
+            </code></pre>
+            </div>
+            <div style="float: left; margin-left: 40px;">
+              <p style="font-weight: 700;">What gets printed to the console?</p>
+              <p class="fragment">Answer (just the ordering): 4, 1, 3, 2, 5</p>
+            </div>
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide padded">
+          <h1 class="slide-title">Promises</h1>
+          <div class="slide-content">
+            <div class="slide-left-wrapper">
+            <pre><code data-trim class="code-medium">
+function findUserWithPromises(id) {
+  console.log(`I’m Mr. Meeseeks 1`);
+  return User.find({id}).exec();
+}
+
+console.log(`I’m Mr. Meeseeks 2`);
+
+let promise = findUserAsync(23932).then(user => {
+  console.log(`I’m Mr. Meeseeks 3`);
+  return `I’m Mr. Meeseeks 4`;
+}).then(text => {
+  console.log(text);
+  return findUserAsync(1032);
+})
+
+console.log(`I’m Mr. Meeseeks 5`);
+
+promise.then(user => {
+  console.log(`I’m Mr. Meeseeks 6`);
+  return Promise.reject(new Error(`I’m Mr. Meeseeks 7`));
+}).then(() => {
+  console.log(`I’m Mr. Meeseeks 8`);
+}.catch(err => {
+  console.log(err.message);
+});
+
+console.log(`I’m Mr. Meeseeks 9`);
+            </code></pre>
+            </div>
+            <div style="float: left; margin-left: 40px;">
+              <p style="font-weight: 700;">What gets printed to the console?</p>
+              <p class="fragment">Answer (just the ordering): 2, 5, 9, 1, 3, 4, 1, 6, 7</p>
+            </div>
+          </div>
+        </section>
+
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">Async/Await (ES7? inspired by C#)</h1>
+          <div class="slide-content">
+            <div class="slide-left-wrapper fragment" style="width: 48%;">
+            <pre><code data-trim class="code-medium">
+// with promises
+function createUser(email, password) {
+  return User.find({email}).then(existingUsers => {
+
+    if (existingUsers.length > 0) {
+      return Promise.reject(false);
+    }
+
+    return bcrypt.hashAsync(password, 15);
+
+  }).then(hashedPassword => {
+
+    let user = new User(email, hashedPassword);
+
+    return user.save().then(() => {
+      console.log(`user with email ${email} created!`);
+      return user;
+    });
+
+  });
+}
+            </code></pre>
+            </div>
+            <div class="fragment" style="
+              width: 200px;
+              position: absolute;
+              bottom: 15%;
+              left: 15%;
+              background: #fff;
+              padding: 24px;
+            ">
+              So much
+              <img src="images/nest.jpg" width="200px">
+            </div>
+            <div class="fragment" style="float: right; width: 48%;">
+            <pre><code data-trim class="code-medium">
+// with async/await
+async function createUser(email, password) {
+  // make sure there isn’t already a user with this email
+  let existingUsers = await User.find({email});
+  if (existingUsers.length > 0) {
+    return false;
+  }
+
+  let hashedPassword = await bcrypt.hashAsync(password, 15)
+    , user = new User(email, hashedPassword);
+
+  await user.save();
+
+  console.log(`user with email ${email} created!`);
+  return user;
+}
+            </code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide padded">
+          <h1 class="slide-title">Testing Callbacks</h1>
+          <div class="slide-content">
+            <pre><code data-trim>
+function findUserAsync(id, callback) {
+  User.find({id}).exec(user => callback(user));
+}
+
+// we could try testing like this:
+findUserAsync(23430, user =>
+  expect(user.email).to.equal(`bob@gmail.com`)
+);
+            </code></pre>
+            <p>
+              <span class="fragment" style="font-weight: 700;">
+                What's the problem with this?
+              </span>
+              <br/>
+              <span class="fragment">
+                What if our function never actually calls our callback? The
+                test wouldn't even run (automatic pass)!
+              </span>
+              <br/><br/><!-- lol sorry -->
+              <span class="fragment">
+                Or imagine that the callback withdraws $50 from your bank account. We want to test
+                that the callback is only called ONE TIME.
+              </span>
+            </p>
+          </div>
+        </section>
+
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">The Solution: Spies</h1>
+          <div class="slide-content">
+            <p>
+              Imagine we had a function that remembers the # of times
+              its been called and any arguments passed to it. How can we implement this?
+            </p>
+            <pre class="fragment"><code data-trim>
+function simpleSpy() {
+  // we're referencing the function name here instead of 'this'
+  // because 'this' refers to the execution context, not the fn;
+  // alternatively, you could bind 'this' to 'simpleSpy'
+  simpleSpy.argsHistory = simpleSpy.argsHistory || [];
+  simpleSpy.timesCalled = simpleSpy.timesCalled || 0;
+
+  simpleSpy.timesCalled += 1;
+  for (let i = 0; i < arguments.length; i++) {
+    simpleSpy.argsHistory.push(arguments[i]);
+  }
+
+  console.log(`Somebody called me!`);
+}
+            </code></pre>
+
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide padded">
+          <h1 class="slide-title">Testing with Our Simple Spy</h1>
+          <div class="slide-content">
+            <p>Now we can use this spy to test our function properly.</p>
+            <pre><code data-trim>
+describe(`the findUserAsync function`, () => {
+
+  it(`should be able to find a user by id`, () => {
+    findUserAsync(23430, simpleSpy);
+
+    setTimeout(() => {
+      expect(simpleSpy.timesCalled).to.equal(1);
+      expect(simpleSpy.argsHistory[0].email).to.equal(`bob@gmail.com`);
+    }, 1000);
+  });
+
+});
+            </code></pre>
+            <p>Note: this is just an example for simplicity’s sake;
+              don’t do setTimeouts during unit tests in practice</p>
+
+          </div>
+        </section>
+
+        <section data-background="#ffa64d" class="full-screen-slide padded">
+          <h1 class="slide-title">Spies with Sinon and Sinon-chai</h1>
+          <div class="slide-content">
+            <pre><code data-trim>
+describe(`the findUserAsync function`, () => {
+
+  it(`should be able to find a user by id`, () => {
+    let callback = sinon.spy();
+    findUserAsync(29034, callback);
+
+    expect(callback).to.have.been.calledOnce;
+    // deep equality check on the argument passed to our callback
+    expect(callback).to.have.been.calledWithMatch({
+      email: `bob@gmail.com`,
+      hashedPassword: `s8984932jdadfghj`, // not a real hash lol
+      name: `Bob`
+    };
+  });
+
+});
+            </code></pre>
+          </div>
+        </section>
+
+        <section data-background="#ffde00" class="full-screen-slide padded">
+          <h1 class="slide-title">Testing Promises with chai-as-promised</h1>
+          <div class="slide-content">
+            <pre><code data-trim>
+// findUser.js
+export function findUserWithPromises(id) {
+  return User.find({id}).exec();
+}
+
+// findUser.spec.js
+import { findUserWithPromises } from './findUser';
+
+describe(`the findUserWithPromises function`, () => {
+
+  it(`should be able to find a user by id`, () => {
+    let userPromise = findUserWithPromises(53094);
+    expect(userPromise).to.eventually.deep.equal({
+      email: `bob@gmail.com`,
+      hashedPassword: `s8984932jdadfghj`,
+      name: `Bob`
+    });
+  });
+
+});
+            </code></pre>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        width: '100vw',
+        height: '100vh',
+
+        controls: false,
+        progress: true,
+        history: true,
+        center: false,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+    <script src='js/animate-title.js' type="text/javascript"></script>
+
+  </body>
+</html>

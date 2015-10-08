@@ -1,0 +1,169 @@
+body {
+}
+
+.reveal {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 30px;
+    line-height: 1.5em;
+    color: #1b1b1b;
+}
+
+.reveal .slides > section {
+    padding-top: 0;
+}
+
+::selection {
+    color: white;
+    background: #ff5e99;
+    text-shadow: none;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+    font-weight: 700;
+}
+
+.reveal h1 {
+    font-size: 60px;
+}
+
+.reveal h2 {
+    font-size: 48px;
+    line-height: 1.5em;
+}
+
+.reveal p {
+    margin-bottom: 1em;
+    margin-top: 1em;
+}
+
+.full-screen-slide {
+    width: 100%;
+    height: 100%;
+    text-align: left;
+}
+
+.reveal .slides .full-screen-slide.padded {
+    padding-top: 5%;
+    padding-bottom: 5%;
+}
+
+/* Intro */
+
+.intro {
+    color: #51392d;
+}
+
+.reveal h1.intro-title {
+    font-size: 30px;
+    font-weight: 700;
+    font-family: 'Source Code Pro', monospace;
+    line-height: 1.5em;
+    text-align: left;
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    left: 15%;
+}
+
+.reveal .intro-footer {
+    position: absolute;
+    bottom: 20%;
+    width: 100%;
+    text-align: left;
+    padding-left: 15%;
+    padding-bottom: 30px;
+    border-bottom: 2px solid rgba(81,57,45,0.5);
+}
+
+.intro-footer-logo {
+    width: 50px;
+    height: 50px;
+    background: url('../../images/logo.svg') no-repeat center;
+    float: left;
+}
+
+.reveal .intro-footer-text {
+    width: 500px;
+    padding-left: 64px;
+    line-height: 50px;
+    margin: 0;
+}
+
+.reveal .intro-footer-name {
+    font-weight: 700;
+    margin-right: 30px;
+}
+
+/* Content Slides */
+
+.reveal h1.slide-title {
+    padding: 40px 15% 40px 15%;
+    border-bottom: 2px solid rgba(81,57,45,0.5);
+}
+
+.reveal .slide-content {
+    padding: 50px 15% 40px 15%;
+}
+
+.def-keys, .def-values {
+    list-style: none;
+}
+
+.def-keys li, .def-values li {
+    margin-bottom: 20px;
+}
+
+.reveal .slides .def-keys {
+    float: left;
+    font-weight: 700;
+    margin-right: 100px
+}
+
+.reveal .slide-left-wrapper {
+    float: left;
+}
+
+.reveal code {
+    text-align: left;
+    padding: 48px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 22px;
+    line-height: 1.5em;
+    border-radius: 5px;
+}
+
+.reveal code.code-small {
+    padding: 20px;
+    font-size: 14px;
+}
+
+.reveal code.code-medium {
+    padding: 24px;
+    font-size: 17px;
+}
+
+.reveal .event-block-seq {
+    list-style: none;
+    float: left;
+    padding-left: 48px;
+}
+
+.reveal .event-block {
+    font-size: 18px;
+    background: rgba(0,0,0,.6);
+    color: rgba(255,255,255,0.7);
+    padding: 6px 14px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.reveal .event-block.omg {
+    background: rgba(255,0,0,0.6);
+    font-size: 14px;
+    font-family: 'Source Code Pro', monospace;
+}
